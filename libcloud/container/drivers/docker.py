@@ -42,10 +42,12 @@ VALID_RESPONSE_CODES = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
 
 class DockerResponse(JsonResponse):
 
+
     valid_response_codes = [httplib.OK, httplib.ACCEPTED, httplib.CREATED,
                             httplib.NO_CONTENT]
 
     def parse_body(self):
+
         if len(self.body) == 0 and not self.parse_zero_length_body:
             return self.body
 
@@ -54,7 +56,8 @@ class DockerResponse(JsonResponse):
             # an error, but response status could still be 200
             content_type = self.headers.get('content-type', 'application/json')
             if content_type == 'application/json' or content_type == '':
-                if self.headers.get('transfer-encoding') == 'chunked':
+                if self.headers.get('transfer-encoding') == 'chunked' and \
+                        'create?fromImage' in self.request.url:
                     body = [json.loads(chunk) for chunk in
                             self.body.strip().replace('\r', '').split('\n')]
                 else:
@@ -610,6 +613,7 @@ class DockerContainerDriver(ContainerDriver):
         """
         Convert container in Container instances
         """
+
         try:
             name = data.get('Name').strip('/')
         except:
